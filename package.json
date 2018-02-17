@@ -1,14 +1,16 @@
 {
   "name": "discord-1337-bot",
   "version": "0.0.1",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
-    "start": "nodemon ./src/server.js"
+    "start": "nodemon ./src/index.js"
   },
   "dependencies": {
     "cross-safe-eval": "^0.0.4",
+    "dotenv": "^5.0.0",
     "eris": "^0.8.3",
     "fast-levenshtein": "^2.0.6",
+    "node-session": "^1.2.1",
     "nodemon": "^1.15.0",
     "notevil": "^1.1.0"
   },

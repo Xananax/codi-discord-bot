@@ -1,0 +1,1 @@
+module.exports.log = (text) => (...what) => console.log(text,...what)

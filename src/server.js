@@ -5,6 +5,7 @@ const { url_decode } = require('./utils/url_decode')
 const { sanitize_command } = require('./utils/sanitize_command')
 const { parse_command } = require('./utils/parse_command')
 const { log } = require('./utils/log')
+const { handler } = require('./handler/handler')
 
 session = new NodeSession({
   secret: process.env.SALT,
@@ -23,7 +24,7 @@ const make_send = ( response ) => ( status = 200 ) => ( text ) => {
   return true;
 }
 
-const start =  ( port = process.env.PORT || 3000 ) => 
+module.exports =  ( port = process.env.PORT || 3000 ) => 
   http.createServer(( request, response) => {
     session.startSession( request, response, () => {
       const token = request.session.getToken()
@@ -34,16 +35,12 @@ const start =  ( port = process.env.PORT || 3000 ) =>
       const err = send(500)
       if(path == 'bot' && text){
         const source =  { id: token }
-        const mentions = query.mentions || []
+        const mentions = query.mentions ? query.mentions.split(',').map(s=>s.trim()) : []
         const [ command, args ] = parse_command(sanitize_command(text))
-        const props = { source, mentions, command, args, text }
-        return ok(JSON.stringify({token, query, command,args}))
+        const props = { source, mentions, command, args, text, reply:ok }
+        return handler(props)
       }
       err('ERROR')
     })
   })
   .listen( port, ( err ) => err ? log('ERROR')(err) : log('all good')(port) )
-
-module.exports = { start }
-
-start()

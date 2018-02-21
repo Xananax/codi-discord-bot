@@ -1,5 +1,6 @@
 const { Ok, No, isOk, isNo } = require('../utils/responses')
 const { chain } = require('../utils/chain')
+const { pad_two_digits, pad_three_digits } = require('../utils/pad_string')
 const { get_random_array_item } = require('../utils/get_random_array_item')
 
 const get_units_defaults = () => ({
@@ -197,6 +198,9 @@ const use = ({ reply, source, args:[item] }) => {
   }
 }
 
+const get_inventory = ({id,inventory:p}) => 
+  `<@${id}>'s inventory:\n`+Object.keys(p).map(k=>`\t${k}:${p[k]}\n`).join(``)
+
 const get_or_create_user = (user) => {
   if(!users[user.id]){
     users[user.id] = create_user(user)
@@ -213,8 +217,45 @@ const get_user_by_id = (id) => {
   return Ok(users[id])
 }
 
+const remove_if_no = (thing) => isNo(thing) ? null : thing
+
+const get_users_by_rank = (users) => 
+  Object.keys(users)
+    .map(chain(
+      get_user_by_id,
+      remove_if_no,
+      ( thing ) => thing && thing.value(),
+      ( thing ) => thing && thing.username !== 'Xananax'
+    ))
+    .filter(Boolean)
+    .sort( ( { inventory:b }, { inventory:a }) => (a.gold+(a.rp*10)) - (b.gold+(b.rp*10)) )
+
+const summary = () => {
+  const sum = {gold:0, rp:0}
+  const users_by_rating = get_users_by_rank(users)
+    .map( ( { id, inventory: { gold, rp } }, rank ) => {
+      sum.gold+=gold
+      sum.rp+=rp
+      return `\`${pad_two_digits(rank+1)}\` | <@${id}> | gold:\`${pad_three_digits(gold)}\`, rp:\`${pad_three_digits(rp)}\``
+    })
+    .join(`\n`)
+  const message = `
+-----------
+!!!TOTAL!!!
+-----------
+
+Total Cohort Gold: ${sum.gold}
+Total Cohort RP: ${sum.rp}
+${users_by_rating}
+`;
+  return message
+}
+
 
 module.exports = {
   get_or_create_multiple_users,
-  get_or_create_user
+  get_or_create_user,
+  get_inventory,
+  shop_items,
+  get_users_by_rank
 }

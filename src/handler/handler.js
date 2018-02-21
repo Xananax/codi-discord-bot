@@ -1,5 +1,5 @@
-const require_all = require('../utils/require_all')
 const { get_or_create_multiple_users, get_or_create_user } = require('../data/user')
+const require_all = require('../utils/require_all')
 const handlers = require_all(__dirname,__filename)
 
 const user_has_mentor_role =  ( member ) => ( member.roles.includes('392614306421669889') )

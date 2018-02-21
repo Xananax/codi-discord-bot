@@ -5,11 +5,11 @@ const { handler } = require('./handler/handler')
 
 module.exports = ( bot ) => {
 
-  const message_originator_is_self = ( message ) => ( message.member.id == bot.user.id )
+  const member_is_self = ( member ) => ( member.id == bot.user.id )
 
   const receive = ( msg ) => {
     
-    if(message_originator_is_self(msg)){ return; }
+    if(member_is_self(msg.member)){ return; }
 
     const text = msg.content
     const sanitized_text = sanitize_command(text)
@@ -22,7 +22,16 @@ module.exports = ( bot ) => {
 
     const { mentions, member:source } = msg
 
-    const props = { source, mentions, command, args, text, reply }
+    let botIsMentioned = false
+    const botIndex = mentions.findIndex(member_is_self)
+
+
+    if(botIndex >=0 ){
+      mentions.splice(botIndex,1)
+      botIsMentioned = true
+    }
+
+    const props = { source, mentions, command, args, text, reply, botIsMentioned }
 
     handler(props)
   }

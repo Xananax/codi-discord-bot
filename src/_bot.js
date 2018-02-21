@@ -3,59 +3,6 @@ const { log } = require('./log')
 
 const mentor_role_id = '392614306421669889'
 
-const users = load()
-
-const create_user = ( { member:{id,nick,roles,user:{avatar,bot:is_bot, discriminator,username}} } ) => 
-Promise.resolve({ //{id,bot,username,discriminator,verified}
-  member:{ nick, roles, avatar, is_bot, discriminator},
-  id,
-  username,
-  inventory:{
-    gold:0, 
-    bonus:0,
-    splash:0,
-    rp:20,
-    pause:0,
-    joker:0,
-    lootbox:1
-  },
-  todos:[],
-  done:[],
-  late:[]
-})
-
-const unit_types = ['gold','bonus','splash','rp','time','joker','lootbox']
-
-const lootbox_gifts = 
-    [ 'joker', 'joker', 'joker', 'joker',
-      'pause', 'pause', 'pause', 'pause',
-      'rp', 'rp', 'rp', 'rp', 'rp', 'rp', 'rp', 'rp', 
-      'batata', 'rock', 'candy'
-    ]
-
-const get_or_create_user = (user) => {
-  if(!users[user.id]){
-    return create_user(user)
-      .then(user => {
-        users[user.id] = user
-        return user
-      })
-  }
-  return Promise.resolve(users[user.id])
-}
-
-const get_user_by_id = (id) => {
-  if(!users[id]){
-    return Promise.reject(`not found`)
-  }
-  return users[id]
-}
-
-const answers = {
-  ba:'tata'
-}
-
-
 
 
 const message_originator_has_mentor_role =  ( msg ) => ( msg.member.roles.includes(mentor_role_id) )
@@ -127,7 +74,7 @@ const HANDLE_RESOURCES_NO_RECEIVER = 3
 const handle_resources = (next) => ({reply, args, source, mentions}) => {
 
   const [,numStr, unit] = args.join('').match(/(\d+)\s*?(\w*)/i) || ['','0','gold']
-
+  
   const num = parseInt(numStr)
 
   if(isNaN(num) || num === 0){
@@ -148,19 +95,6 @@ const handle_resources = (next) => ({reply, args, source, mentions}) => {
 const unitSummary = (user,unit) => `<@${user.id}> has \`${user.inventory[unit]}\` ${unit}`
 
 const make_reply_later = (reply) => ( text, time = 1000 ) => setTimeout(reply.bind(null,text),time)
-
-const shop_items = [
-  { name:'loot box',
-    price:`100 gold`,
-    run:( user ) => {
-      if(user.inventory.gold<100){ return false }
-      user.inventory.lootbox+=1
-      user.inventory.gold-=100
-      return true
-    },
-    description:`A box that contains a suprise!`
-  }
-]
 
 const commands = {
   help:{

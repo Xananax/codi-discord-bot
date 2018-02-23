@@ -1,4 +1,5 @@
 const { get_random_array_item } = require('../utils/get_random_array_item')
+
 const filledArray = (name,times) => ( new Array(times) ).fill(name)
 
 const lootbox_gifts = merge(

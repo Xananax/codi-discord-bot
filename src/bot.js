@@ -17,7 +17,8 @@ module.exports = ( bot ) => {
     if( !text ){ return }
     
     const reply = (answer) => bot.createMessage(msg.channel.id, answer)
-    
+    const reply_later = ( text, time = 1000 ) => setTimeout(reply.bind(null,text),time)
+
     const [ command, args ] = parse_command(sanitized_text)
 
     const { mentions, member:source } = msg
@@ -31,7 +32,7 @@ module.exports = ( bot ) => {
       botIsMentioned = true
     }
 
-    const props = { source, mentions, command, args, text, reply, botIsMentioned }
+    const props = { source, mentions, command, args, text, reply, botIsMentioned, reply_later }
 
     handler(props)
   }

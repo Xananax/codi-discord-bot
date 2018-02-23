@@ -1,7 +1,8 @@
 const { Ok, No, isOk, isNo } = require('../utils/responses')
 const { chain } = require('../utils/chain')
 const { pad_two_digits, pad_three_digits } = require('../utils/pad_string')
-const { get_random_array_item } = require('../utils/get_random_array_item')
+const { merge_arrays:merge } = require('../utils/merge_arrays')
+const { store_config: store_lootbox, get_lootbox_gift }  = require('./lootbox')
 
 const get_units_defaults = () => ({
   gold:0, 
@@ -13,31 +14,8 @@ const get_units_defaults = () => ({
   lootbox:1
 })
 
-const unit_types = Object.keys(get_units_defaults())
-
-const filledArray = (name,times) => ( new Array(times) ).fill(name)
-const merge = (...arrs) => arrs.reduce( ( prev, curr ) => prev.concat(curr) ) 
-
-const lootbox_gifts = merge(
-  filledArray( 'joker' , 4 ),
-  filledArray( 'pause' , 4 ),
-  filledArray( 'rp'    , 8 ),
-  filledArray( 'batata', 1 ),
-  filledArray( 'rock'  , 1 ),
-  filledArray( 'candy' , 1 ),
-)
-
 const shop_items = [
-  { name:'loot box',
-    price:`100 gold`,
-    run:( user ) => {
-      if( user.inventory.gold < 100 ){ return No('not enough gold') }
-      user.inventory.lootbox+=1
-      user.inventory.gold-=100
-      return Ok('added')
-    },
-    description:`A box that contains a suprise!`
-  }
+  store_lootbox
 ]
 
 const unit_change_summary = (unit) => (user) => `<@${user.id}> has \`${user.inventory[unit]}\` ${unit}`
@@ -149,16 +127,13 @@ const buy = ({ source, args })=> {
   return Ok(`<@${source.id}> `+things.join(`, `)) 
 }
 
-const make_reply_later = (reply) => ( text, time = 1000 ) => setTimeout(reply.bind(null,text),time)
-
-const use = ({ reply, source, args:[item] }) => {
+const use = ({ reply, reply_later, source, args:[item] }) => {
   if(item=='lootbox'){
     if(!source.inventory.lootbox){
       return reply(`You don't have a lootbox to open. Try when you have one`)
     }
     source.inventory.lootbox-=1
-    const gift = get_random_array_item(lootbox_gifts)
-    const reply_later = make_reply_later(reply)
+    const gift = get_lootbox_gift()
     reply(`opening loobox! 4 seconds to go`)
     reply_later(`3 seconds to go...`,1000)
     reply_later(`... 2 seconds to gooo...`,2000)
